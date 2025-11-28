@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: exbot-postgres
+    environment:
+      POSTGRES_USER: userS4Z1HY6BP2DJ9TF8LK3N
+      POSTGRES_PASSWORD: passV6OJ1CG5UU9P2YB0L8SK
+      POSTGRES_DB: telegram_bot
+    ports:
+      - "5432:5432"
+    volumes:
+      # Updated to use local folder as requested
+      - ./PostgresShop/data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: exbot-server
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: npm run start:dev
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=userS4Z1HY6BP2DJ9TF8LK3N
+      - DB_PASSWORD=passV6OJ1CG5UU9P2YB0L8SK
+      - DB_DATABASE=telegram_bot
+      - PORT=3000
+    env_file:
+      - ./server/.env
+
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
