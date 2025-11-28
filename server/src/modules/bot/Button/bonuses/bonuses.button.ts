@@ -1,9 +1,16 @@
 import { Context } from 'telegraf';
 
 export class BonusesButton {
-  static async handle(ctx: Context) {
+  static async handle(
+    ctx: Context, 
+    sendMessageWithCleanup: (ctx: Context, message: string, keyboard?: any) => Promise<any>,
+    removeFromTracking?: (chatId: number, messageId: number) => void
+  ) {
+    if (ctx.chat && ctx.message && 'message_id' in ctx.message && removeFromTracking) {
+      removeFromTracking(ctx.chat.id, ctx.message.message_id);
+    }
     await ctx.deleteMessage().catch(() => {});
-    await ctx.reply('Раздел бонусов в разработке');
+    await sendMessageWithCleanup(ctx, '🎁 Раздел бонусов в разработке\n\nСкоро здесь вы сможете посмотреть свои накопленные бонусы! 💰');
   }
 }
 

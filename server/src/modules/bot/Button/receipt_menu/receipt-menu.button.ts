@@ -1,9 +1,16 @@
 import { Context } from 'telegraf';
 
 export class ReceiptMenuButton {
-  static async handle(ctx: Context) {
+  static async handle(
+    ctx: Context, 
+    sendMessageWithCleanup: (ctx: Context, message: string, keyboard?: any) => Promise<any>,
+    removeFromTracking?: (chatId: number, messageId: number) => void
+  ) {
+    if (ctx.chat && ctx.message && 'message_id' in ctx.message && removeFromTracking) {
+      removeFromTracking(ctx.chat.id, ctx.message.message_id);
+    }
     await ctx.deleteMessage().catch(() => {});
-    await ctx.reply('Введите номер заказа для получения чека:');
+    await sendMessageWithCleanup(ctx, '🧾 Введите номер заказа для получения чека:\n\n📝 Просто отправьте номер заказа в следующем сообщении');
   }
 }
 
