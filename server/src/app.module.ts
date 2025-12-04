@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BotModule } from './modules/bot/bot.module';
 import { UsersModule } from './modules/users/users.module';
+import { BroadcastModule } from './modules/broadcast/broadcast.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -29,6 +30,7 @@ import { AppService } from './app.service';
     }),
     UsersModule,
     BotModule,
+    BroadcastModule,
   ],
   controllers: [AppController],
   providers: [AppService],

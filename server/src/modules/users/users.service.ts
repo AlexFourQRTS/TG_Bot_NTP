@@ -41,4 +41,15 @@ export class UsersService {
     }
     return null;
   }
+
+  async findAll(): Promise<User[]> {
+    return this.usersRepository.find();
+  }
+
+  async findByRole(role?: string): Promise<User[]> {
+    if (!role) {
+      return this.findAll();
+    }
+    return this.usersRepository.find({ where: { role: role as UserRole } });
+  }
 }

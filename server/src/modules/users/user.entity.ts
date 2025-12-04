@@ -33,6 +33,9 @@ export class User {
   })
   role: UserRole;
 
+  @Column({ type: 'date', nullable: true })
+  birthday: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -18,7 +18,7 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BotService.name);
   private chatMessages: Map<number, number[]> = new Map(); // chatId -> messageId[]
   private chatHistoryLoaded: Map<number, boolean> = new Map(); // chatId -> isHistoryLoaded
-  private readonly MAX_MESSAGES = 7;
+  private readonly MAX_MESSAGES = 4;
   private reconnectInterval: NodeJS.Timeout | null = null;
   private readonly RECONNECT_DELAY = 5000; // 5 секунд
   private cleanupInterval: NodeJS.Timeout | null = null;
@@ -523,5 +523,65 @@ ${isAdmin ? '👑 Ваша роль: Администратор' : '👤 Ваш�
     ]);
 
     await this.sendMessageWithCleanup(ctx, message, keyboard);
+  }
+
+  /**
+   * Отправляет сообщение пользователю по его telegramId
+   * @param telegramId - Telegram ID пользователя
+   * @param message - Текст сообщения
+   * @returns true если сообщение отправлено успешно, false в противном случае
+   */
+  async sendMessageToUser(telegramId: string, message: string): Promise<boolean> {
+    if (!this.bot || !this.isBotRunning) {
+      this.logger.warn('Bot is not running, cannot send message');
+      return false;
+    }
+
+    try {
+      const chatId = parseInt(telegramId, 10);
+      if (isNaN(chatId)) {
+        this.logger.error(`Invalid telegramId: ${telegramId}`);
+        return false;
+      }
+
+      await this.bot.telegram.sendMessage(chatId, message);
+      this.logger.log(`Message sent to user ${telegramId}`);
+      return true;
+    } catch (error: any) {
+      const errorMessage = error?.message || '';
+      // Игнорируем ошибки, если пользователь заблокировал бота или чат не найден
+      if (errorMessage.includes('chat not found') || 
+          errorMessage.includes('bot was blocked') ||
+          errorMessage.includes('user is deactivated')) {
+        this.logger.warn(`Cannot send message to user ${telegramId}: ${errorMessage}`);
+      } else {
+        this.logger.error(`Failed to send message to user ${telegramId}:`, errorMessage);
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Отправляет сообщение нескольким пользователям
+   * @param telegramIds - Массив Telegram ID пользователей
+   * @param message - Текст сообщения
+   * @returns Объект с результатами отправки
+   */
+  async sendMessageToUsers(telegramIds: string[], message: string): Promise<{ success: number; failed: number }> {
+    let success = 0;
+    let failed = 0;
+
+    for (const telegramId of telegramIds) {
+      const result = await this.sendMessageToUser(telegramId, message);
+      if (result) {
+        success++;
+      } else {
+        failed++;
+      }
+      // Небольшая задержка между отправками, чтобы не превысить rate limits
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+
+    return { success, failed };
   }
 }
