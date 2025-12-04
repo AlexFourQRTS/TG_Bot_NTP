@@ -5,6 +5,11 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export enum KeyboardType {
+  REPLY = 'reply',
+  INLINE = 'inline',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -35,6 +40,17 @@ export class User {
 
   @Column({ type: 'date', nullable: true })
   birthday: Date;
+
+  @Column({ type: 'boolean', default: false, nullable: false })
+  isVip: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: KeyboardType,
+    default: KeyboardType.REPLY,
+    nullable: false
+  })
+  keyboardType: KeyboardType;
 
   @CreateDateColumn()
   createdAt: Date;

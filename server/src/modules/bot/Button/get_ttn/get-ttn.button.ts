@@ -6,9 +6,16 @@ export class GetTtnButton {
     ctx: Context, 
     requestPhone: (ctx: Context, action: 'ttn' | 'receipt') => Promise<void>
   ) {
+    const telegramId = ctx.from?.id?.toString();
+    console.log(`[GetTtnButton] Starting handle for user: ${telegramId}`);
     await ctx.answerCbQuery();
-    await ctx.deleteMessage().catch(() => {});
+    console.log(`[GetTtnButton] AnswerCbQuery done, deleting message`);
+    await ctx.deleteMessage().catch((err) => {
+      console.log(`[GetTtnButton] Error deleting message: ${err}`);
+    });
+    console.log(`[GetTtnButton] Calling requestPhone with action 'ttn'`);
     await requestPhone(ctx, 'ttn');
+    console.log(`[GetTtnButton] requestPhone completed`);
   }
 }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserRole } from './user.entity';
+import { User, UserRole, KeyboardType } from './user.entity';
 
 @Injectable()
 export class UsersService {
@@ -51,5 +51,14 @@ export class UsersService {
       return this.findAll();
     }
     return this.usersRepository.find({ where: { role: role as UserRole } });
+  }
+
+  async setKeyboardType(telegramId: number | string, keyboardType: KeyboardType): Promise<User | null> {
+    const user = await this.findOne(telegramId.toString());
+    if (user) {
+      user.keyboardType = keyboardType;
+      return this.usersRepository.save(user);
+    }
+    return null;
   }
 }
